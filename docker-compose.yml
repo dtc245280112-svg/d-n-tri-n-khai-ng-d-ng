@@ -58,6 +58,42 @@ services:
     networks:
       - backend-net
 
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: inventory_prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - backend-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: inventory_grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - backend-net
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: inventory_cadvisor
+    restart: always
+    ports:
+      - "8082:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - backend-net
+
 volumes:
   db_data:
 
