@@ -94,6 +94,30 @@ services:
     networks:
       - backend-net
 
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: inventory_loki
+    restart: always
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - backend-net
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: inventory_promtail
+    restart: always
+    volumes:
+      - ./promtail/promtail.yml:/etc/promtail/promtail.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/promtail.yml
+    depends_on:
+      - loki
+    networks:
+      - backend-net
+
 volumes:
   db_data:
 
