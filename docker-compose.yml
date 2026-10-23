@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  app:
+    build: ./app
+    container_name: inventory_app
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_USER: inventory_user
+      DB_PASSWORD: InventoryPass123!
+      DB_NAME: inventory_db
+    volumes:
+      - ./app:/var/www/html
+    networks:
+      - backend-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: inventory_nginx
+    restart: always
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./app:/var/www/html
+    depends_on:
+      - app
+    networks:
+      - frontend-net
+      - backend-net
+
+  db:
+    image: mysql:8.0
+    container_name: inventory_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: RootStrongPass123!
+      MYSQL_DATABASE: inventory_db
+      MYSQL_USER: inventory_user
+      MYSQL_PASSWORD: InventoryPass123!
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: inventory_pma
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: RootStrongPass123!
+    depends_on:
+      - db
+    networks:
+      - backend-net
+
+volumes:
+  db_data:
+
+networks:
+  frontend-net:
+  backend-net:
